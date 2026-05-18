@@ -211,9 +211,63 @@ select{
 
 </style>
 </head>
+<script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+
+    apiKey: "TON_API_KEY",
+    authDomain: "TON_AUTH_DOMAIN",
+    projectId: "TON_PROJECT_ID",
+    storageBucket: "TON_STORAGE_BUCKET",
+    messagingSenderId: "TON_MESSAGING_SENDER_ID",
+    appId: "TON_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+window.auth = auth;
+window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+window.signOut = signOut;
+window.onAuthStateChanged = onAuthStateChanged;
+
+</script>
 <body>
+<div id="authBox" style="
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+">
 
+    <h2>Connexion</h2>
+
+    <input type="email" id="email" placeholder="Email">
+
+    <input type="password" id="password" placeholder="Mot de passe">
+
+    <button onclick="register()">Créer un compte</button>
+
+    <button onclick="login()">Connexion</button>
+
+    <button onclick="logout()">Déconnexion</button>
+
+    <div id="userInfo"></div>
+
+</div>
+    
 <div class="mainLayout">
 
     <!-- MENU -->
@@ -297,7 +351,31 @@ select{
     <div id="victoryText">VICTORY</div>
 </div>
 
-<script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+
+    apiKey: "TON_API_KEY",
+    authDomain: "TON_AUTH_DOMAIN",
+    projectId: "TON_PROJECT_ID",
+    storageBucket: "TON_STORAGE_BUCKET",
+    messagingSenderId: "TON_MESSAGING_SENDER_ID",
+    appId: "TON_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
 
 /* =========================
    THEMES
@@ -943,6 +1021,67 @@ document.getElementById("revealBtn")
 
     });
 
+async function register(){
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try{
+
+        await createUserWithEmailAndPassword(auth, email, password);
+
+        alert("Compte créé !");
+
+    }catch(error){
+
+        alert(error.message);
+    }
+}
+
+async function login(){
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try{
+
+        await signInWithEmailAndPassword(auth, email, password);
+
+        alert("Connecté !");
+
+    }catch(error){
+
+        alert(error.message);
+    }
+}
+
+async function logout(){
+
+    await signOut(auth);
+}
+
+onAuthStateChanged(auth, (user) => {
+
+    const userInfo = document.getElementById("userInfo");
+
+    if(user){
+
+        userInfo.innerHTML = `
+            ✅ Connecté : <b>${user.email}</b>
+        `;
+
+    }else{
+
+        userInfo.innerHTML = `
+            ❌ Non connecté
+        `;
+    }
+});
+
+window.register = register;
+window.login = login;
+window.logout = logout;
+    
 </script>
 
 </body>
