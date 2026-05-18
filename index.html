@@ -211,103 +211,9 @@ select{
 
 </style>
 </head>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ================= Firebase config ================= */
-
-const firebaseConfig = {
-  apiKey: "TON_API_KEY_ICI",
-  authDomain: "englishvocgame-92e82.firebaseapp.com",
-  projectId: "englishvocgame-92e82",
-  storageBucket: "englishvocgame-92e82.appspot.com",
-  messagingSenderId: "420096543570",
-  appId: "1:420096543570:web:f48bf7df0fa5c04b88888b"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-/* ================= AUTH FUNCTIONS ================= */
-
-window.register = async function () {
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert("Compte créé !");
-    } catch (e) {
-        alert(e.message);
-    }
-};
-
-window.login = async function () {
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Connecté !");
-    } catch (e) {
-        alert(e.message);
-    }
-};
-
-window.logout = async function () {
-    await signOut(auth);
-};
-
-/* ================= UI AUTH STATE ================= */
-
-onAuthStateChanged(auth, (user) => {
-
-    const userInfo = document.getElementById("userInfo");
-
-    if (user) {
-        userInfo.innerHTML = `✅ Connecté : <b>${user.email}</b>`;
-    } else {
-        userInfo.innerHTML = `❌ Non connecté`;
-    }
-});
-
-</script>
 <body>
-<div id="authBox">
 
-    <h2>Connexion</h2>
-
-    <input type="email" id="email" placeholder="Email">
-
-    <input type="password" id="password" placeholder="Mot de passe">
-
-    <button onclick="register()">
-        Créer un compte
-    </button>
-
-    <button onclick="login()">
-        Se connecter
-    </button>
-
-    <button onclick="logout()">
-        Déconnexion
-    </button>
-
-    <div id="userInfo">
-        ❌ Non connecté
-    </div>
-
-</div>
-    
 <div class="mainLayout">
 
     <!-- MENU -->
@@ -391,40 +297,7 @@ onAuthStateChanged(auth, (user) => {
     <div id="victoryText">VICTORY</div>
 </div>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBmczb7XUXh7hWZwCjG3GHTH0DLkuue_zA",
-  authDomain: "englishvocgame-92e82.firebaseapp.com",
-  projectId: "englishvocgame-92e82",
-  storageBucket: "englishvocgame-92e82.firebasestorage.app",
-  messagingSenderId: "420096543570",
-  appId: "1:420096543570:web:f48bf7df0fa5c04b88888b",
-  measurementId: "G-RMZF267NX1"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+<script>
 
 /* =========================
    THEMES
@@ -1069,71 +942,7 @@ document.getElementById("revealBtn")
         });
 
     });
-/* =========================
-   login...
-========================= */
-    
-async function register(){
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try{
-
-        await createUserWithEmailAndPassword(auth, email, password);
-
-        alert("Compte créé !");
-
-    }catch(error){
-
-        alert(error.message);
-    }
-}
-
-async function login(){
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try{
-
-        await signInWithEmailAndPassword(auth, email, password);
-
-        alert("Connecté !");
-
-    }catch(error){
-
-        alert(error.message);
-    }
-}
-
-async function logout(){
-
-    await signOut(auth);
-}
-
-onAuthStateChanged(auth, (user) => {
-
-    const userInfo = document.getElementById("userInfo");
-
-    if(user){
-
-        userInfo.innerHTML = `
-            ✅ Connecté : <b>${user.email}</b>
-        `;
-
-    }else{
-
-        userInfo.innerHTML = `
-            ❌ Non connecté
-        `;
-    }
-});
-
-window.register = register;
-window.login = login;
-window.logout = logout;
-    
 </script>
 
 </body>
