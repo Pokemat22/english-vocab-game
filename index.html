@@ -1,0 +1,950 @@
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>English Vocabulary Trainer</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f4f4f4;
+}
+
+h1,h2{
+    margin-top:0;
+}
+
+.mainLayout{
+    display:flex;
+    min-height:100vh;
+}
+
+/* ===== MENU ===== */
+
+.sidebar{
+    width:340px;
+    background:white;
+    padding:20px;
+    box-shadow:2px 0 8px rgba(0,0,0,0.1);
+    overflow-y:auto;
+}
+
+.themeGrid{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.themeItem{
+    background:#f1f1f1;
+    padding:8px;
+    border-radius:8px;
+}
+
+.modeGroup{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.playBtn{
+    width:100%;
+    padding:18px;
+    font-size:28px;
+    font-weight:bold;
+    background:#00aa55;
+    color:white;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+}
+
+.playBtn:hover{
+    background:#00994d;
+}
+
+/* ===== GAME ===== */
+
+.gameArea{
+    flex:1;
+    padding:20px;
+}
+
+.stats{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+.topbar{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.actionBtn{
+    padding:10px 16px;
+    background:#333;
+    color:white;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+    gap:14px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.word{
+    width:35%;
+    font-weight:bold;
+}
+
+input{
+    flex:1;
+    padding:10px;
+    border-radius:8px;
+    border:2px solid #ccc;
+    font-size:15px;
+}
+
+.correct{
+    background:#b9ffb9;
+    border-color:green;
+}
+
+.wrong{
+    background:#fff0a8;
+    border-color:#d6b600;
+}
+
+.revealed{
+    background:#ffb5b5;
+    border-color:red;
+}
+
+.showBtn{
+    background:#ff7d7d;
+    color:white;
+    padding:10px;
+}
+
+select{
+    padding:10px;
+    border-radius:8px;
+    width:100%;
+    font-size:16px;
+}
+
+/* ===== VICTORY ===== */
+
+#victoryOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    pointer-events:none;
+}
+
+#victoryText{
+    font-size:90px;
+    font-weight:bold;
+    color:white;
+    text-shadow:
+        0 0 20px gold,
+        0 0 40px orange;
+    animation:pop 0.6s ease;
+}
+
+@keyframes pop{
+    0%{
+        transform:scale(0.3);
+        opacity:0;
+    }
+    100%{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.confetti{
+    position:fixed;
+    width:12px;
+    height:12px;
+    top:-20px;
+    animation:fall linear forwards;
+    z-index:9998;
+}
+
+@keyframes fall{
+    to{
+        transform:translateY(110vh) rotate(720deg);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="mainLayout">
+
+    <!-- MENU -->
+    <div class="sidebar">
+
+        <h1>🎮 Vocab Trainer</h1>
+
+        <h2>📚 Thèmes</h2>
+
+        <div class="themeGrid" id="themeButtons"></div>
+
+        <button class="actionBtn" id="allThemesBtn">
+            ✅ Tous les thèmes
+        </button>
+
+        <br><br>
+
+        <h2>🎯 Mode</h2>
+
+        <div class="modeGroup">
+
+            <label>
+                <input type="radio" name="mode" value="en-fr" checked>
+                anglais → français
+            </label>
+
+            <label>
+                <input type="radio" name="mode" value="fr-en">
+                français → anglais
+            </label>
+
+            <label>
+                <input type="radio" name="mode" value="mix">
+                mix aléatoire
+            </label>
+
+        </div>
+
+        <h2>🔢 Nombre de mots</h2>
+
+        <select id="wordCount">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="all">Tous</option>
+        </select>
+
+        <br><br>
+
+        <button class="playBtn" id="playBtn">
+            ▶ PLAY
+        </button>
+
+    </div>
+
+    <!-- GAME -->
+    <div class="gameArea">
+
+        <div class="stats">
+            ✅ Trouvés :
+            <span id="correctCount">0</span> /
+            <span id="totalCount">0</span>
+        </div>
+
+        <div class="topbar">
+
+            <button class="actionBtn" id="revealBtn">
+                👁 Tous découvrir
+            </button>
+
+        </div>
+
+        <div class="container" id="container"></div>
+
+    </div>
+
+</div>
+
+<div id="victoryOverlay">
+    <div id="victoryText">VICTORY</div>
+</div>
+
+<script>
+
+/* =========================
+   THEMES
+========================= */
+
+const themes = {
+
+    "Transport/Travel": [
+        {en:"luggage", fr:["bagage"]},
+        {en:"hand luggage", fr:["bagage à main"]},
+        {en:"seatbelt", fr:["ceinture de sécurité"]},
+        {en:"flight attendant", fr:["hôtesse de l’air","steward"]},
+        {en:"passport control", fr:["contrôle des passeports"]},
+        {en:"customs", fr:["douane"]},
+        {en:"window seat", fr:["siège côté fenêtre"]},
+        {en:"aisle seat", fr:["siège côté couloir"]},
+        {en:"boarding pass", fr:["carte d’embarquement"]},
+        {en:"trip", fr:["voyage"]},
+        {en:"journey", fr:["voyage"]},
+        {en:"cruise", fr:["croisière"]}
+    ],
+
+    "Circulation/Traffic": [
+        {en:"traffic lights", fr:["feu de circulation"]},
+        {en:"roundabout", fr:["rond-point"]},
+        {en:"junction", fr:["carrefour"]},
+        {en:"speed limit", fr:["limitation de vitesse"]},
+        {en:"pedestrian crossing", fr:["passage piéton"]},
+        {en:"hard shoulder", fr:["bande d’arrêt d’urgence"]},
+        {en:"middle lane", fr:["voie du milieu"]},
+        {en:"outside lane", fr:["voie extérieure"]},
+        {en:"queue", fr:["file d’attente"]},
+        {en:"rush hour", fr:["heure de pointe"]}
+    ],
+
+    "Weather/Météo": [
+        {en:"fog", fr:["brouillard"]},
+        {en:"hailstorm", fr:["grêle"]},
+        {en:"thunderstorm", fr:["tempête"]},
+        {en:"hurricane", fr:["ouragan"]},
+        {en:"monsoon", fr:["mousson"]},
+        {en:"flood", fr:["inondation"]},
+        {en:"drought", fr:["sécheresse"]},
+        {en:"drizzle", fr:["bruine"]},
+        {en:"visibility", fr:["visibilité"]},
+        {en:"overcast", fr:["ciel couvert"]},
+        {en:"slippery", fr:["glissant"]},
+        {en:"icy", fr:["verglas"]}
+    ],
+
+    "Technology/Technologie": [
+        {en:"biofuel", fr:["biocarburant"]},
+        {en:"power plant", fr:["centrale électrique"]},
+        {en:"technology", fr:["technologie"]},
+        {en:"drone", fr:["drone"]},
+        {en:"database", fr:["base de données"]},
+        {en:"rocket", fr:["fusée"]},
+        {en:"spacecraft", fr:["vaisseau spatial"]}
+    ],
+
+"Leisure & Entertainment": [
+
+    {en:"ability", fr:["capacité","aptitude"]},
+    {en:"accomplishment", fr:["accomplissement","réalisation"]},
+    {en:"achievement", fr:["réussite","exploit"]},
+    {en:"activities", fr:["activités"]},
+    {en:"advanced", fr:["avancé"]},
+    {en:"affordable", fr:["abordable"]},
+    {en:"boring", fr:["ennuyeux"]},
+    {en:"challenge", fr:["mettre au défi"]},
+    {en:"challenging", fr:["difficile","stimulant"]},
+    {en:"cheap", fr:["bon marché"]},
+    {en:"coach", fr:["entraîneur"]},
+    {en:"competitive", fr:["compétitif"]},
+    {en:"competitor", fr:["concurrent","compétiteur"]},
+    {en:"complicated", fr:["compliqué"]},
+    {en:"component", fr:["composant"]},
+    {en:"confidence", fr:["confiance"]},
+    {en:"dangerous", fr:["dangereux"]},
+    {en:"difficult", fr:["difficile"]},
+    {en:"do gymnastics", fr:["faire de la gymnastique"]},
+    {en:"easy", fr:["facile"]},
+    {en:"endeavour", fr:["s’efforcer"]},
+    {en:"environment", fr:["environnement"]},
+    {en:"exciting", fr:["passionnant"]},
+    {en:"exhausting", fr:["épuisant"]},
+    {en:"expensive", fr:["cher"]},
+    {en:"facility", fr:["installation","équipement"]},
+    {en:"free time", fr:["temps libre"]},
+    {en:"go + V-ing", fr:["aller faire"]},
+    {en:"growth", fr:["croissance"]},
+    {en:"gym", fr:["salle de sport"]},
+    {en:"hard", fr:["difficile"]},
+    {en:"indoor", fr:["intérieur"]},
+    {en:"inexpensive", fr:["peu coûteux"]},
+    {en:"lack", fr:["manque"]},
+    {en:"latest technology", fr:["technologie de pointe"]},
+    {en:"leadership", fr:["leadership"]},
+    {en:"leisure time", fr:["temps de loisir"]},
+    {en:"length", fr:["longueur"]},
+    {en:"meaning", fr:["signification"]},
+    {en:"opponent", fr:["adversaire"]},
+    {en:"outdoor", fr:["extérieur"]},
+    {en:"outdoors", fr:["en extérieur"]},
+    {en:"overcome", fr:["surmonter"]},
+    {en:"participate in", fr:["participer à"]},
+    {en:"play volleyball", fr:["jouer au volley-ball"]},
+    {en:"popular", fr:["populaire"]},
+    {en:"ranking", fr:["classement"]},
+    {en:"referee", fr:["arbitre"]},
+    {en:"relaxing", fr:["relaxant"]},
+    {en:"rely on", fr:["compter sur"]},
+    {en:"rule", fr:["règle"]},
+    {en:"safe", fr:["sûr"]},
+    {en:"safety", fr:["sécurité"]},
+    {en:"self-confidence", fr:["confiance en soi"]},
+    {en:"setting", fr:["cadre","contexte"]},
+    {en:"skill", fr:["compétence","habileté"]},
+    {en:"skill level", fr:["niveau de compétence"]},
+    {en:"spend time doing something", fr:["passer du temps à faire quelque chose"]},
+    {en:"stressful", fr:["stressant"]},
+    {en:"swap", fr:["échanger"]},
+    {en:"tackle", fr:["s’attaquer à"]},
+    {en:"task", fr:["tâche"]},
+    {en:"teamwork", fr:["travail d’équipe"]},
+    {en:"time off", fr:["temps libre","congé"]},
+    {en:"time-consuming", fr:["chronophage"]},
+    {en:"timely", fr:["opportun","ponctuel"]},
+    {en:"tiring", fr:["fatigant"]},
+    {en:"tough", fr:["dur","difficile"]},
+    {en:"train", fr:["s’entraîner"]},
+    {en:"training", fr:["entraînement","formation"]},
+    {en:"trekking", fr:["randonnée"]},
+    {en:"trust", fr:["confiance"]},
+    {en:"try", fr:["essayer"]},
+    {en:"unpopular", fr:["impopulaire"]},
+    {en:"wilderness", fr:["nature sauvage"]},
+    {en:"worldwide", fr:["dans le monde entier"]}
+],
+
+"Sports": [
+
+    {en:"academic performance", fr:["performance scolaire"]},
+    {en:"active", fr:["actif"]},
+    {en:"advise", fr:["conseiller"]},
+    {en:"amateur", fr:["amateur"]},
+    {en:"ankle", fr:["cheville"]},
+    {en:"athlete", fr:["athlète"]},
+    {en:"athletics", fr:["athlétisme"]},
+    {en:"balance", fr:["équilibrer"]},
+    {en:"be afraid of heights", fr:["avoir le vertige"]},
+    {en:"be fond of", fr:["aimer"]},
+    {en:"be interested in", fr:["être intéressé par"]},
+    {en:"be mad about", fr:["être fou de"]},
+    {en:"beneficial", fr:["bénéfique"]},
+    {en:"benefit", fr:["bénéficier"]},
+    {en:"blow the whistle", fr:["siffler"]},
+    {en:"bone", fr:["os"]},
+    {en:"boost", fr:["stimuler"]},
+    {en:"busy", fr:["occupé"]},
+    {en:"CEO", fr:["PDG"]},
+    {en:"chance", fr:["chance","occasion"]},
+    {en:"characteristic", fr:["caractéristique"]},
+    {en:"close to someone", fr:["proche de quelqu’un"]},
+    {en:"coaching tool", fr:["outil d’entraînement"]},
+    {en:"commitment", fr:["engagement"]},
+    {en:"communicator", fr:["communicateur"]},
+    {en:"compete", fr:["concourir"]},
+    {en:"competition", fr:["compétition"]},
+    {en:"concentrate on", fr:["se concentrer sur"]},
+    {en:"cross over", fr:["passer de ... à"]},
+    {en:"cycle", fr:["faire du vélo"]},
+    {en:"deal with", fr:["gérer"]},
+    {en:"disciplined", fr:["discipliné"]},
+    {en:"dislike", fr:["ne pas aimer"]},
+    {en:"do one’s best", fr:["faire de son mieux"]},
+    {en:"draw", fr:["faire match nul"]},
+    {en:"efficient", fr:["efficace"]},
+    {en:"efficiently", fr:["efficacement"]},
+    {en:"engage in", fr:["s’engager dans"]},
+    {en:"engineer", fr:["ingénieur"]},
+    {en:"enhance", fr:["améliorer"]},
+    {en:"enjoyable", fr:["agréable"]},
+    {en:"exercise", fr:["exercice"]},
+    {en:"feedback", fr:["retour","avis"]},
+    {en:"field", fr:["terrain","domaine"]},
+    {en:"final", fr:["final"]},
+    {en:"finale", fr:["finale"]},
+    {en:"fitness", fr:["forme physique"]},
+    {en:"focus", fr:["concentration"]},
+    {en:"get fit", fr:["se remettre en forme"]},
+    {en:"get on with", fr:["bien s’entendre avec"]},
+    {en:"goal", fr:["but","objectif"]},
+    {en:"healthy", fr:["en bonne santé"]},
+    {en:"improve", fr:["améliorer"]},
+    {en:"improvement", fr:["amélioration"]},
+    {en:"improvise", fr:["improviser"]},
+    {en:"injury", fr:["blessure"]},
+    {en:"instructor", fr:["instructeur"]},
+    {en:"involvement", fr:["implication"]},
+    {en:"joints", fr:["articulations"]},
+    {en:"jump", fr:["saut"]},
+    {en:"knee", fr:["genou"]},
+    {en:"luck", fr:["chance"]},
+    {en:"member", fr:["membre"]},
+    {en:"membership", fr:["adhésion"]},
+    {en:"motivation", fr:["motivation"]},
+    {en:"organized", fr:["organisé"]},
+    {en:"opportunity", fr:["opportunité"]},
+    {en:"perform", fr:["performer","réaliser"]},
+    {en:"performance", fr:["performance"]},
+    {en:"perseverance", fr:["persévérance"]},
+    {en:"player", fr:["joueur"]},
+    {en:"professional", fr:["professionnel"]},
+    {en:"push oneself", fr:["se dépasser"]},
+    {en:"real-time", fr:["en temps réel"]},
+    {en:"record", fr:["record"]},
+    {en:"relieve stress", fr:["soulager le stress"]},
+    {en:"running", fr:["course à pied"]},
+    {en:"sedentary", fr:["sédentaire"]},
+    {en:"self-discipline", fr:["autodiscipline"]},
+    {en:"sign up", fr:["s’inscrire"]},
+    {en:"spectator", fr:["spectateur"]},
+    {en:"spin class", fr:["cours de vélo en salle"]},
+    {en:"sports fan", fr:["fan de sport"]},
+    {en:"springboard", fr:["tremplin"]},
+    {en:"strain", fr:["effort","tension"]},
+    {en:"strenuous", fr:["intense","fatigant"]},
+    {en:"stress", fr:["stress"]},
+    {en:"support staff", fr:["personnel de soutien"]},
+    {en:"sweat", fr:["transpirer"]},
+    {en:"team member", fr:["membre de l’équipe"]},
+    {en:"teammate", fr:["coéquipier"]},
+    {en:"technique", fr:["technique"]},
+    {en:"track and field", fr:["athlétisme"]},
+    {en:"umpire", fr:["arbitre"]},
+    {en:"unexpected", fr:["inattendu"]},
+    {en:"versatile", fr:["polyvalent"]},
+    {en:"viewer", fr:["spectateur"]},
+    {en:"volunteering", fr:["bénévolat"]},
+    {en:"wearable", fr:["portable","connecté"]},
+    {en:"whistle", fr:["sifflet"]},
+    {en:"work out", fr:["s’entraîner","résoudre"]}
+],
+
+};
+
+/* =========================
+   VARIABLES
+========================= */
+
+const container = document.getElementById("container");
+
+let currentWords = [];
+let currentMode = "en-fr";
+
+/* =========================
+   THEMES UI
+========================= */
+
+const themeButtons = document.getElementById("themeButtons");
+
+Object.keys(themes).forEach(theme => {
+
+    const div = document.createElement("div");
+    div.className = "themeItem";
+
+    div.innerHTML = `
+        <label>
+            <input type="checkbox" class="themeCheck" value="${theme}">
+            ${theme}
+        </label>
+    `;
+
+    themeButtons.appendChild(div);
+
+});
+
+document.getElementById("allThemesBtn").addEventListener("click", () => {
+
+    document.querySelectorAll(".themeCheck").forEach(c => {
+        c.checked = true;
+    });
+
+});
+
+/* =========================
+   UTILS
+========================= */
+
+function normalize(text){
+
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+}
+
+function shuffleArray(array){
+
+    for(let i = array.length - 1; i > 0; i--){
+
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function updateStats(){
+
+    const correct =
+        document.querySelectorAll(".correct").length;
+
+    document.getElementById("correctCount").textContent =
+        correct;
+
+    const total = currentWords.length;
+
+    if(total > 0 && correct === total){
+
+        if(!window.victoryShown){
+
+            window.victoryShown = true;
+            launchVictory();
+        }
+    }
+
+    else{
+
+        window.victoryShown = false;
+    }
+}
+
+/* =========================
+   START GAME
+========================= */
+
+function startGame(){
+
+    const selectedThemes = [];
+
+    document.querySelectorAll(".themeCheck").forEach(c => {
+
+        if(c.checked){
+            selectedThemes.push(c.value);
+        }
+
+    });
+
+    if(selectedThemes.length === 0){
+
+        alert("Choisis au moins un thème !");
+        return;
+    }
+
+    currentMode =
+        document.querySelector('input[name="mode"]:checked').value;
+
+    let words = [];
+
+    selectedThemes.forEach(theme => {
+
+        words.push(...themes[theme]);
+
+    });
+
+    shuffleArray(words);
+
+    const count =
+        document.getElementById("wordCount").value;
+
+    if(count !== "all"){
+
+        words = words.slice(0, parseInt(count));
+
+    }
+
+    currentWords = words;
+
+    document.getElementById("totalCount").textContent =
+        words.length;
+
+    createCards(words);
+
+}
+
+/* =========================
+   CREATE CARDS
+========================= */
+
+function createCards(words){
+
+    container.innerHTML = "";
+
+    words.forEach(word => {
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const left = document.createElement("div");
+        left.className = "word";
+
+        let expectedAnswers = [];
+        let displayWord = "";
+
+        if(currentMode === "en-fr"){
+
+            displayWord = word.en;
+            expectedAnswers = word.fr;
+
+        }
+
+        else if(currentMode === "fr-en"){
+
+            displayWord = word.fr[0];
+            expectedAnswers = [word.en];
+
+        }
+
+        else{
+
+            if(Math.random() < 0.5){
+
+                displayWord = word.en;
+                expectedAnswers = word.fr;
+
+            }
+
+            else{
+
+                displayWord = word.fr[0];
+                expectedAnswers = [word.en];
+
+            }
+        }
+
+        left.textContent = displayWord;
+
+        const input = document.createElement("input");
+
+        input.placeholder = "Traduction...";
+
+        input.addEventListener("keydown", e => {
+
+            if(e.key === "Enter"){
+
+                e.preventDefault();
+
+                const allInputs =
+                    document.querySelectorAll(".card input");
+
+                const index =
+                    Array.from(allInputs).indexOf(input);
+
+                if(index < allInputs.length - 1){
+
+                    allInputs[index + 1].focus();
+
+                }
+            }
+
+        });
+
+        input.addEventListener("input", () => {
+
+            const value = normalize(input.value);
+
+            const valid = expectedAnswers.some(answer =>
+                normalize(answer) === value
+            );
+
+            input.classList.remove(
+                "correct",
+                "wrong"
+            );
+
+            if(value === ""){
+
+                updateStats();
+                return;
+
+            }
+
+            if(valid){
+
+                input.classList.add("correct");
+
+            }
+
+            else{
+
+                input.classList.add("wrong");
+
+            }
+
+            updateStats();
+
+        });
+
+        const btn = document.createElement("button");
+
+        btn.textContent = "👁";
+        btn.className = "showBtn";
+
+        btn.addEventListener("click", () => {
+
+            input.value =
+                expectedAnswers.join(" / ");
+
+            input.classList.remove(
+                "correct",
+                "wrong"
+            );
+
+            input.classList.add("revealed");
+
+            updateStats();
+
+        });
+
+        card.appendChild(left);
+        card.appendChild(input);
+        card.appendChild(btn);
+
+        container.appendChild(card);
+
+    });
+
+    updateStats();
+
+}
+
+/* =========================
+   REVEAL ALL
+========================= */
+
+function revealAll(){
+
+    document.querySelectorAll(".card").forEach(card => {
+
+        const input = card.querySelector("input");
+
+        if(
+            !input.classList.contains("correct") &&
+            !input.classList.contains("revealed")
+        ){
+
+            input.classList.remove("wrong");
+
+            input.classList.add("revealed");
+
+        }
+
+    });
+
+}
+function launchVictory(){
+
+    const overlay =
+        document.getElementById("victoryOverlay");
+
+    overlay.style.display = "flex";
+
+    for(let i=0; i<180; i++){
+
+        const confetti =
+            document.createElement("div");
+
+        confetti.className = "confetti";
+
+        confetti.style.left =
+            Math.random() * 100 + "vw";
+
+        confetti.style.background =
+            `hsl(${Math.random()*360},100%,50%)`;
+
+        confetti.style.animationDuration =
+            (Math.random()*3 + 2) + "s";
+
+        document.body.appendChild(confetti);
+
+        setTimeout(() => {
+            confetti.remove();
+        }, 5000);
+    }
+
+    setTimeout(() => {
+        overlay.style.display = "none";
+    }, 4000);
+}
+
+/* =========================
+   EVENTS
+========================= */
+
+document.getElementById("playBtn")
+    .addEventListener("click", startGame);
+
+document.getElementById("revealBtn")
+    .addEventListener("click", () => {
+
+        document.querySelectorAll(".card").forEach(card => {
+
+            const input = card.querySelector("input");
+
+            if(
+                !input.classList.contains("correct") &&
+                !input.classList.contains("revealed")
+            ){
+
+                const wordIndex =
+                    Array.from(document.querySelectorAll(".card"))
+                    .indexOf(card);
+
+                const word = currentWords[wordIndex];
+
+                let answers = [];
+
+                if(currentMode === "fr-en"){
+
+                    answers = [word.en];
+
+                }
+
+                else{
+
+                    answers = word.fr;
+
+                }
+
+                input.value =
+                    answers.join(" / ");
+
+                input.classList.remove("wrong");
+
+                input.classList.add("revealed");
+
+            }
+
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
+```
