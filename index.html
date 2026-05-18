@@ -212,20 +212,19 @@ select{
 </style>
 </head>
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ================= Firebase config ================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBmczb7XUXh7hZWw....",
+  apiKey: "TON_API_KEY_ICI",
   authDomain: "englishvocgame-92e82.firebaseapp.com",
   projectId: "englishvocgame-92e82",
   storageBucket: "englishvocgame-92e82.appspot.com",
@@ -234,14 +233,52 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 
-window.auth = auth;
-window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-window.signOut = signOut;
-window.onAuthStateChanged = onAuthStateChanged;
+/* ================= AUTH FUNCTIONS ================= */
+
+window.register = async function () {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Compte créé !");
+    } catch (e) {
+        alert(e.message);
+    }
+};
+
+window.login = async function () {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Connecté !");
+    } catch (e) {
+        alert(e.message);
+    }
+};
+
+window.logout = async function () {
+    await signOut(auth);
+};
+
+/* ================= UI AUTH STATE ================= */
+
+onAuthStateChanged(auth, (user) => {
+
+    const userInfo = document.getElementById("userInfo");
+
+    if (user) {
+        userInfo.innerHTML = `✅ Connecté : <b>${user.email}</b>`;
+    } else {
+        userInfo.innerHTML = `❌ Non connecté`;
+    }
+});
 
 </script>
 <body>
